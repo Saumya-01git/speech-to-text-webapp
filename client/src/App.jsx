@@ -1,27 +1,138 @@
+import { useState } from "react";
+import axios from "axios";
+
 function App() {
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      setMessage("Please select a file first");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("audio", file);
+
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:5000/upload",
+        formData
+      );
+
+      setMessage(res.data.message);
+    } catch (error) {
+      setMessage("Upload failed");
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(to right, #ffecd2, #fcb69f)",
+        fontFamily: "Arial",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "40px",
+          borderRadius: "20px",
+          width: "400px",
+          textAlign: "center",
+          boxShadow: "0px 8px 20px rgba(0,0,0,0.3)",
+        }}
+      >
+        <h1
+          style={{
+            marginBottom: "10px",
+            color: "#243b55",
+            fontSize: "32px",
+          }}
+        >
+          🎤 Speech To Text
+        </h1>
 
-      <h1 className="text-5xl font-bold mb-8">
-        Speech To Text Web App
-      </h1>
+        <p style={{ color: "gray", marginBottom: "25px" }}>
+          Upload your audio file and convert speech into text.
+        </p>
 
-      <p className="mb-6 text-gray-300">
-        Upload or record audio and convert it into text
-      </p>
+        <div
+          style={{
+            border: "2px dashed #243b55",
+            borderRadius: "12px",
+            padding: "20px",
+            marginBottom: "20px",
+            backgroundColor: "#f8f9fa",
+          }}
+        >
+          <input
+            type="file"
+            onChange={handleFileChange}
+            style={{
+              width: "100%",
+              cursor: "pointer",
+            }}
+          />
+        </div>
 
-      <input
-        type="file"
-        accept="audio/*"
-        className="mb-4 border border-gray-500 p-2 rounded-lg"
-      />
+        {file && (
+          <p
+            style={{
+              marginBottom: "15px",
+              color: "#333",
+              fontWeight: "bold",
+            }}
+          >
+            Selected File: {file.name}
+          </p>
+        )}
 
-      <button className="bg-blue-500 px-6 py-2 rounded-lg hover:bg-blue-600">
-        Upload Audio
-      </button>
+        <button
+          onClick={handleUpload}
+          style={{
+            backgroundColor: "#243b55",
+            color: "white",
+            border: "none",
+            padding: "12px 25px",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "16px",
+            width: "100%",
+            transition: "0.3s",
+          }}
+        >
+          {loading ? "Uploading..." : "Upload Audio"}
+        </button>
 
+        {message && (
+          <p
+            style={{
+              marginTop: "20px",
+              color: message.includes("success") ? "green" : "red",
+              fontWeight: "bold",
+            }}
+          >
+            {message}
+          </p>
+        )}
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
