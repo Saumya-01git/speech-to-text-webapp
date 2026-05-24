@@ -1,9 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import uploadRoute from "./routes/upload.js";
-
-dotenv.config();
+import transcribeRoute from "./routes/transcribe.js";
+console.log(process.env.OPENAI_API_KEY);
 
 const app = express();
 
@@ -11,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/upload", uploadRoute);
+app.use("/transcribe", transcribeRoute);
 
 app.get("/", (req, res) => {
   res.send("Backend is working 🚀");
