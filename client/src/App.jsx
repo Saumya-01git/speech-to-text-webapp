@@ -7,9 +7,12 @@ function App() {
   const [transcription, setTranscription] = useState("");
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [liveText, setLiveText] = useState("");
+  const [listening, setListening] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const recognitionRef = useRef(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -49,6 +52,9 @@ function App() {
   };
 
   const startRecording = async () => {
+
+  try {
+
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
@@ -63,6 +69,7 @@ function App() {
     };
 
     mediaRecorder.onstop = async () => {
+
       const audioBlob = new Blob(audioChunksRef.current, {
         type: "audio/wav",
       });
@@ -80,11 +87,66 @@ function App() {
 
     mediaRecorder.start();
     setRecording(true);
-  };
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert("Microphone access denied");
+  }
+};
 
   const stopRecording = () => {
     mediaRecorderRef.current.stop();
     setRecording(false);
+  };
+
+  const startLiveSpeech = () => {
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech Recognition not supported");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event) => {
+
+      let transcript = "";
+
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
+      ) {
+        transcript += event.results[i][0].transcript;
+      }
+
+      setLiveText(transcript);
+    };
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
+    setListening(true);
+  };
+
+  const stopLiveSpeech = () => {
+
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
+    setListening(false);
   };
 
   return (
@@ -203,7 +265,43 @@ function App() {
             ⏹ Stop Recording
           </button>
         )}
+        <button
+          onClick={startLiveSpeech}
+          style={{
+            backgroundColor: "#ff6600",
+            color: "white",
+            border: "none",
+            padding: "12px 25px",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "16px",
+            width: "100%",
+            marginTop: "15px",
+          }}
+        >
+          {listening
+            ? "🎤 Listening... Speak now"
+            : "⚡ Start Live Speech"}
+        </button>
 
+        {listening && (
+            <button
+              onClick={stopLiveSpeech}
+              style={{
+                backgroundColor: "#cc0000",
+                color: "white",
+                border: "none",
+                padding: "12px 25px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontSize: "16px",
+                width: "100%",
+                marginTop: "10px",
+              }}
+            >
+              🛑 Stop Live Speech
+            </button>
+        )}
         {message && (
           <p
             style={{
@@ -214,7 +312,21 @@ function App() {
             {message}
           </p>
         )}
+        {liveText && (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "15px",
+              backgroundColor: "#fff3cd",
+              borderRadius: "10px",
+              textAlign: "left",
+            }}
+          >
+            <h3>Live Speech:</h3>
 
+            <p>{liveText}</p>
+          </div>
+        )}
         {transcription && (
           <div
             style={{
