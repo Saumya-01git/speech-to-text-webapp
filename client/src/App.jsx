@@ -1,45 +1,90 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 
 function App() {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
+  const [transcription, setTranscription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  const [recording, setRecording] = useState(false);
+
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      setMessage("Please select a file first");
+  const handleUpload = async (audioFile) => {
+    const selectedFile = audioFile || file;
+
+    if (!selectedFile) {
+      setMessage("Please select or record audio");
       return;
     }
 
     const formData = new FormData();
-    formData.append("audio", file);
+    formData.append("audio", selectedFile);
 
     try {
       setLoading(true);
+      setMessage("");
+      setTranscription("");
 
       const res = await axios.post(
         "http://localhost:5000/transcribe",
         formData
       );
 
-      setTranscript(res.data.text);
-      setMessage("Transcription successful");
+      setTranscription(res.data.text);
+      setMessage("Transcription completed ✅");
 
     } catch (error) {
-
-      setMessage("Transcription failed");
       console.log(error);
+      setMessage("Transcription failed ❌");
 
     } finally {
-
       setLoading(false);
     }
+  };
+
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
+
+    const mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorderRef.current = mediaRecorder;
+    audioChunksRef.current = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunksRef.current.push(event.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: "audio/wav",
+      });
+
+      const recordedFile = new File(
+        [audioBlob],
+        "recording.wav",
+        {
+          type: "audio/wav",
+        }
+      );
+
+      handleUpload(recordedFile);
+    };
+
+    mediaRecorder.start();
+    setRecording(true);
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current.stop();
+    setRecording(false);
   };
 
   return (
@@ -58,7 +103,7 @@ function App() {
           backgroundColor: "white",
           padding: "40px",
           borderRadius: "20px",
-          width: "450px",
+          width: "420px",
           textAlign: "center",
           boxShadow: "0px 8px 20px rgba(0,0,0,0.3)",
         }}
@@ -73,13 +118,8 @@ function App() {
           🎤 Speech To Text
         </h1>
 
-        <p
-          style={{
-            color: "gray",
-            marginBottom: "25px",
-          }}
-        >
-          Upload your audio file and convert speech into text.
+        <p style={{ color: "gray", marginBottom: "25px" }}>
+          Upload or record audio and convert speech into text.
         </p>
 
         <div
@@ -114,7 +154,7 @@ function App() {
         )}
 
         <button
-          onClick={handleUpload}
+          onClick={() => handleUpload()}
           style={{
             backgroundColor: "#243b55",
             color: "white",
@@ -124,19 +164,50 @@ function App() {
             cursor: "pointer",
             fontSize: "16px",
             width: "100%",
-            transition: "0.3s",
+            marginBottom: "15px",
           }}
         >
           {loading ? "Converting..." : "Convert To Text"}
         </button>
 
+        {!recording ? (
+          <button
+            onClick={startRecording}
+            style={{
+              backgroundColor: "#008000",
+              color: "white",
+              border: "none",
+              padding: "12px 25px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "16px",
+              width: "100%",
+            }}
+          >
+            🎙 Start Recording
+          </button>
+        ) : (
+          <button
+            onClick={stopRecording}
+            style={{
+              backgroundColor: "#cc0000",
+              color: "white",
+              border: "none",
+              padding: "12px 25px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "16px",
+              width: "100%",
+            }}
+          >
+            ⏹ Stop Recording
+          </button>
+        )}
+
         {message && (
           <p
             style={{
               marginTop: "20px",
-              color: message.includes("successful")
-                ? "green"
-                : "red",
               fontWeight: "bold",
             }}
           >
@@ -144,33 +215,19 @@ function App() {
           </p>
         )}
 
-        {transcript && (
+        {transcription && (
           <div
             style={{
-              marginTop: "25px",
-              padding: "20px",
-              backgroundColor: "#f8f9fa",
-              borderRadius: "12px",
+              marginTop: "20px",
+              padding: "15px",
+              backgroundColor: "#f1f1f1",
+              borderRadius: "10px",
               textAlign: "left",
             }}
           >
-            <h3
-              style={{
-                color: "#243b55",
-                marginBottom: "10px",
-              }}
-            >
-              📝 Transcript
-            </h3>
+            <h3>Transcription:</h3>
 
-            <p
-              style={{
-                color: "#333",
-                lineHeight: "1.6",
-              }}
-            >
-              {transcript}
-            </p>
+            <p>{transcription}</p>
           </div>
         )}
       </div>
