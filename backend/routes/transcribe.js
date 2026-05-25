@@ -2,33 +2,51 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import multer from "multer";
 import fs from "fs";
-import OpenAI from "openai";
+import { createClient } from "@deepgram/sdk";
 
 const router = express.Router();
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const upload = multer({ dest: "uploads/" });
 
-router.post("/", async (req, res) => {
+const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
+
+router.post("/", upload.single("audio"), async (req, res) => {
   try {
-    const audioPath = req.body.filePath;
 
-    const transcription = await client.audio.transcriptions.create({
-      file: fs.createReadStream(audioPath),
-      model: "whisper-1",
-    });
+    const audioFile = fs.readFileSync(req.file.path);
+
+    const { result, error } =
+      await deepgram.listen.prerecorded.transcribeFile(
+        audioFile,
+        {
+          model: "nova-2",
+          smart_format: true,
+        }
+      );
+
+    if (error) {
+      console.log(error);
+
+      return res.status(500).json({
+        message: "Transcription failed",
+      });
+    }
+
+    const text =
+      result.results.channels[0].alternatives[0].transcript;
 
     res.json({
-      text: transcription.text,
+      text,
     });
 
   } catch (error) {
+
     console.log(error);
 
     res.status(500).json({
-      message: "Transcription failed",
+      message: "Server error",
     });
   }
 });

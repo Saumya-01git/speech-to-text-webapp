@@ -5,6 +5,7 @@ function App() {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [transcript, setTranscript] = useState("");
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -23,15 +24,20 @@ function App() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/upload",
+        "http://localhost:5000/transcribe",
         formData
       );
 
-      setMessage(res.data.message);
+      setTranscript(res.data.text);
+      setMessage("Transcription successful");
+
     } catch (error) {
-      setMessage("Upload failed");
+
+      setMessage("Transcription failed");
       console.log(error);
+
     } finally {
+
       setLoading(false);
     }
   };
@@ -52,7 +58,7 @@ function App() {
           backgroundColor: "white",
           padding: "40px",
           borderRadius: "20px",
-          width: "400px",
+          width: "450px",
           textAlign: "center",
           boxShadow: "0px 8px 20px rgba(0,0,0,0.3)",
         }}
@@ -67,7 +73,12 @@ function App() {
           🎤 Speech To Text
         </h1>
 
-        <p style={{ color: "gray", marginBottom: "25px" }}>
+        <p
+          style={{
+            color: "gray",
+            marginBottom: "25px",
+          }}
+        >
           Upload your audio file and convert speech into text.
         </p>
 
@@ -116,19 +127,51 @@ function App() {
             transition: "0.3s",
           }}
         >
-          {loading ? "Uploading..." : "Upload Audio"}
+          {loading ? "Converting..." : "Convert To Text"}
         </button>
 
         {message && (
           <p
             style={{
               marginTop: "20px",
-              color: message.includes("success") ? "green" : "red",
+              color: message.includes("successful")
+                ? "green"
+                : "red",
               fontWeight: "bold",
             }}
           >
             {message}
           </p>
+        )}
+
+        {transcript && (
+          <div
+            style={{
+              marginTop: "25px",
+              padding: "20px",
+              backgroundColor: "#f8f9fa",
+              borderRadius: "12px",
+              textAlign: "left",
+            }}
+          >
+            <h3
+              style={{
+                color: "#243b55",
+                marginBottom: "10px",
+              }}
+            >
+              📝 Transcript
+            </h3>
+
+            <p
+              style={{
+                color: "#333",
+                lineHeight: "1.6",
+              }}
+            >
+              {transcript}
+            </p>
+          </div>
         )}
       </div>
     </div>
