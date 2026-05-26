@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import connectDB from "./config/db.js";
 import express from "express";
 import cors from "cors";
 import uploadRoute from "./routes/upload.js";
@@ -8,6 +9,7 @@ import transcribeRoute from "./routes/transcribe.js";
 console.log(process.env.OPENAI_API_KEY);
 
 const app = express();
+connectDB();
 
 app.use(cors());
 app.use(express.json());
