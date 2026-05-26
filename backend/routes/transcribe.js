@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import Transcription from "../models/Transcription.js";
 import express from "express";
 import multer from "multer";
 import fs from "fs";
@@ -37,9 +38,23 @@ router.post("/", upload.single("audio"), async (req, res) => {
     const text =
       result.results.channels[0].alternatives[0].transcript;
 
-    res.json({
-      text,
-    });
+    try {
+  await Transcription.create({
+    text,
+    fileName: req.file.originalname,
+  });
+
+  console.log("Saved to MongoDB ✅");
+
+} catch (dbError) {
+
+  console.log("MongoDB Save Failed ❌");
+  console.log(dbError);
+}
+
+res.json({
+  text,
+});
 
   } catch (error) {
 
