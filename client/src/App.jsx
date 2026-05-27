@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 function App() {
@@ -9,6 +9,7 @@ function App() {
   const [recording, setRecording] = useState(false);
   const [liveText, setLiveText] = useState("");
   const [listening, setListening] = useState(false);
+  const [history, setHistory] = useState([]);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -19,41 +20,54 @@ function App() {
   };
 
   const handleUpload = async (audioFile) => {
-    const selectedFile = audioFile || file;
+  const selectedFile = audioFile || file;
 
-    if (!selectedFile) {
-      setMessage("Please select or record audio");
-      return;
-    }
+  if (!selectedFile) {
+    setMessage("Please select or record audio");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("audio", selectedFile);
+  const formData = new FormData();
+  formData.append("audio", selectedFile);
 
-    try {
-      setLoading(true);
-      setMessage("");
-      setTranscription("");
+  try {
+    setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:5000/transcribe",
-        formData
-      );
+    // RESET OLD DATA
+    setMessage("");
+    setTranscription("");
+    setLiveText("");
 
-      setTranscription(res.data.text);
-      setMessage("Transcription completed ✅");
+    const res = await axios.post(
+      "http://localhost:5000/transcribe",
+      formData
+    );
 
-    } catch (error) {
-      console.log(error);
-      setMessage("Transcription failed ❌");
+    setTranscription(res.data.text);
+    setMessage("Transcription completed ✅");
 
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchHistory();
+
+  } catch (error) {
+
+    console.log(error);
+
+    setMessage("Transcription failed ❌");
+
+  } finally {
+
+    setLoading(false);
+    setFile(null);
+  }
+};
 
   const startRecording = async () => {
 
   try {
+
+    setTranscription("");
+    setLiveText("");
+    setMessage("");
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -103,6 +117,10 @@ function App() {
 
   const startLiveSpeech = () => {
 
+    setTranscription("");
+    setLiveText("");
+    setMessage("");
+
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
@@ -148,6 +166,26 @@ function App() {
 
     setListening(false);
   };
+
+  const fetchHistory = async () => {
+
+  try {
+
+    const res = await axios.get(
+      "http://localhost:5000/history"
+    );
+
+    setHistory(res.data);
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
+
+useEffect(() => {
+  fetchHistory();
+}, []);
 
   return (
     <div
@@ -342,6 +380,36 @@ function App() {
             <p>{transcription}</p>
           </div>
         )}
+        {history.length > 0 && (
+  <div
+    style={{
+      marginTop: "20px",
+      textAlign: "left",
+    }}
+  >
+    <h3>History:</h3>
+
+    {history.map((item) => (
+      <div
+        key={item._id}
+        style={{
+          backgroundColor: "#e9ecef",
+          padding: "10px",
+          borderRadius: "10px",
+          marginTop: "10px",
+        }}
+      >
+        <p>
+          <strong>File:</strong> {item.fileName}
+        </p>
+
+        <p>
+          <strong>Text:</strong> {item.text}
+        </p>
+      </div>
+    ))}
+  </div>
+)}
       </div>
     </div>
   );
