@@ -188,33 +188,9 @@ useEffect(() => {
 }, []);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to right, #ffecd2, #fcb69f)",
-        fontFamily: "Arial",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "40px",
-          borderRadius: "20px",
-          width: "420px",
-          textAlign: "center",
-          boxShadow: "0px 8px 20px rgba(0,0,0,0.3)",
-        }}
-      >
-        <h1
-          style={{
-            marginBottom: "10px",
-            color: "#243b55",
-            fontSize: "32px",
-          }}
-        >
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-orange-100 to-orange-300 font-sans p-4">
+      <div className="bg-white p-10 rounded-3xl w-full max-w-md text-center shadow-2xl">
+        <h1 className="mb-3 text-slate-800 text-4xl font-bold">
           🎤 Speech To Text
         </h1>
 
@@ -222,23 +198,12 @@ useEffect(() => {
           Upload or record audio and convert speech into text.
         </p>
 
-        <div
-          style={{
-            border: "2px dashed #243b55",
-            borderRadius: "12px",
-            padding: "20px",
-            marginBottom: "20px",
-            backgroundColor: "#f8f9fa",
-          }}
-        >
+        <div className="border-2 border-dashed border-slate-600 rounded-2xl p-5 mb-5 bg-slate-100">
           <input
-            type="file"
-            onChange={handleFileChange}
-            style={{
-              width: "100%",
-              cursor: "pointer",
-            }}
-          />
+  type="file"
+  onChange={handleFileChange}
+  className="w-full cursor-pointer text-sm"
+/>
         </div>
 
         {file && (
@@ -254,69 +219,31 @@ useEffect(() => {
         )}
 
         <button
-          onClick={() => handleUpload()}
-          style={{
-            backgroundColor: "#243b55",
-            color: "white",
-            border: "none",
-            padding: "12px 25px",
-            borderRadius: "10px",
-            cursor: "pointer",
-            fontSize: "16px",
-            width: "100%",
-            marginBottom: "15px",
-          }}
-        >
+  onClick={() => handleUpload()}
+  className="bg-slate-800 hover:bg-slate-900 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full mb-4 font-semibold"
+>
           {loading ? "Converting..." : "Convert To Text"}
         </button>
 
         {!recording ? (
           <button
             onClick={startRecording}
-            style={{
-              backgroundColor: "#008000",
-              color: "white",
-              border: "none",
-              padding: "12px 25px",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontSize: "16px",
-              width: "100%",
-            }}
+            className="bg-green-600 hover:bg-green-700 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full font-semibold"
           >
             🎙 Start Recording
           </button>
         ) : (
           <button
             onClick={stopRecording}
-            style={{
-              backgroundColor: "#cc0000",
-              color: "white",
-              border: "none",
-              padding: "12px 25px",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontSize: "16px",
-              width: "100%",
-            }}
+            className="bg-red-600 hover:bg-red-700 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full font-semibold"
           >
             ⏹ Stop Recording
           </button>
         )}
         <button
-          onClick={startLiveSpeech}
-          style={{
-            backgroundColor: "#ff6600",
-            color: "white",
-            border: "none",
-            padding: "12px 25px",
-            borderRadius: "10px",
-            cursor: "pointer",
-            fontSize: "16px",
-            width: "100%",
-            marginTop: "15px",
-          }}
-        >
+  onClick={startLiveSpeech}
+  className="bg-orange-500 hover:bg-orange-600 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full mt-4 font-semibold"
+>
           {listening
             ? "🎤 Listening... Speak now"
             : "⚡ Start Live Speech"}
@@ -325,17 +252,7 @@ useEffect(() => {
         {listening && (
             <button
               onClick={stopLiveSpeech}
-              style={{
-                backgroundColor: "#cc0000",
-                color: "white",
-                border: "none",
-                padding: "12px 25px",
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontSize: "16px",
-                width: "100%",
-                marginTop: "10px",
-              }}
+              className="bg-red-600 hover:bg-red-700 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full mt-3 font-semibold"
             >
               🛑 Stop Live Speech
             </button>
