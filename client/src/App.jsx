@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import UploadCard from "./components/UploadCard";
+import HistoryCard from "./components/HistoryCard";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -188,148 +192,95 @@ useEffect(() => {
 }, []);
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-orange-100 to-orange-300 font-sans p-4">
-      <div className="bg-white p-10 rounded-3xl w-full max-w-md text-center shadow-2xl">
-        <h1 className="mb-3 text-slate-800 text-4xl font-bold">
-          🎤 Speech To Text
-        </h1>
+  <div className="min-h-screen relative overflow-hidden flex flex-col justify-center items-center bg-gradient-to-br from-black via-blue-950 to-red-950 font-sans p-4">
+    <div className="absolute top-40 left-20 w-72 h-72 bg-orange-500/20 blur-3xl rounded-full"></div>
 
-        <p style={{ color: "gray", marginBottom: "25px" }}>
-          Upload or record audio and convert speech into text.
-        </p>
+<div className="absolute bottom-20 right-20 w-80 h-80 bg-blue-500/20 blur-3xl rounded-full"></div>
 
-        <div className="border-2 border-dashed border-slate-600 rounded-2xl p-5 mb-5 bg-slate-100">
-          <input
-  type="file"
-  onChange={handleFileChange}
-  className="w-full cursor-pointer text-sm"
-/>
-        </div>
+<div className="absolute top-1/2 left-1/2 w-96 h-96 bg-yellow-400/10 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+    <Navbar />
+    <div className="absolute w-72 h-72 bg-orange-500/20 blur-3xl rounded-full top-20 left-10"></div>
 
-        {file && (
-          <p
-            style={{
-              marginBottom: "15px",
-              color: "#333",
-              fontWeight: "bold",
-            }}
-          >
-            Selected File: {file.name}
-          </p>
-        )}
+<div className="absolute w-72 h-72 bg-amber-300/20 blur-3xl rounded-full bottom-10 right-10"></div>
+<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_60%)]"></div>
 
-        <button
-  onClick={() => handleUpload()}
-  className="bg-slate-800 hover:bg-slate-900 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full mb-4 font-semibold"
+    {/* HOME SECTION */}
+    <section
+      id="home"
+      className="min-h-screen flex justify-center items-center px-4"
+    >
+      <Hero />
+    </section>
+
+    {/* TRANSCRIBE SECTION */}
+    {/* TRANSCRIBE SECTION */}
+<section
+  id="transcribe"
+  className="min-h-screen flex flex-col justify-center items-center px-4"
 >
-          {loading ? "Converting..." : "Convert To Text"}
-        </button>
 
-        {!recording ? (
-          <button
-            onClick={startRecording}
-            className="bg-green-600 hover:bg-green-700 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full font-semibold"
-          >
-            🎙 Start Recording
-          </button>
-        ) : (
-          <button
-            onClick={stopRecording}
-            className="bg-red-600 hover:bg-red-700 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full font-semibold"
-          >
-            ⏹ Stop Recording
-          </button>
-        )}
-        <button
-  onClick={startLiveSpeech}
-  className="bg-orange-500 hover:bg-orange-600 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full mt-4 font-semibold"
->
-          {listening
-            ? "🎤 Listening... Speak now"
-            : "⚡ Start Live Speech"}
-        </button>
+  <UploadCard
+    file={file}
+    handleFileChange={handleFileChange}
+    handleUpload={handleUpload}
+    loading={loading}
+    recording={recording}
+    startRecording={startRecording}
+    stopRecording={stopRecording}
+    listening={listening}
+    startLiveSpeech={startLiveSpeech}
+    stopLiveSpeech={stopLiveSpeech}
+    message={message}
+    liveText={liveText}
+    transcription={transcription}
+  />
 
-        {listening && (
-            <button
-              onClick={stopLiveSpeech}
-              className="bg-red-600 hover:bg-red-700 transition-all text-white py-3 px-6 rounded-xl cursor-pointer text-base w-full mt-3 font-semibold"
-            >
-              🛑 Stop Live Speech
-            </button>
-        )}
-        {message && (
-          <p
-            style={{
-              marginTop: "20px",
-              fontWeight: "bold",
-            }}
-          >
-            {message}
-          </p>
-        )}
-        {liveText && (
-          <div
-            style={{
-              marginTop: "20px",
-              padding: "15px",
-              backgroundColor: "#fff3cd",
-              borderRadius: "10px",
-              textAlign: "left",
-            }}
-          >
-            <h3>Live Speech:</h3>
+  <div className="grid md:grid-cols-3 gap-5 mt-8 w-full max-w-5xl">
 
-            <p>{liveText}</p>
-          </div>
-        )}
-        {transcription && (
-          <div
-            style={{
-              marginTop: "20px",
-              padding: "15px",
-              backgroundColor: "#f1f1f1",
-              borderRadius: "10px",
-              textAlign: "left",
-            }}
-          >
-            <h3>Transcription:</h3>
+    <div className="bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 text-white hover:scale-105 transition-all duration-500">
+      <h2 className="text-2xl font-bold mb-3">
+        ⚡ Fast Processing
+      </h2>
 
-            <p>{transcription}</p>
-          </div>
-        )}
-        {history.length > 0 && (
-  <div
-    style={{
-      marginTop: "20px",
-      textAlign: "left",
-    }}
-  >
-    <h3>History:</h3>
-
-    {history.map((item) => (
-      <div
-        key={item._id}
-        style={{
-          backgroundColor: "#e9ecef",
-          padding: "10px",
-          borderRadius: "10px",
-          marginTop: "10px",
-        }}
-      >
-        <p>
-          <strong>File:</strong> {item.fileName}
-        </p>
-
-        <p>
-          <strong>Text:</strong> {item.text}
-        </p>
-      </div>
-    ))}
-  </div>
-)}
-      </div>
+      <p className="text-gray-300">
+        Convert audio into text within seconds using AI-powered transcription.
+      </p>
     </div>
-  );
+
+    <div className="bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 text-white hover:scale-105 transition-all duration-500">
+      <h2 className="text-2xl font-bold mb-3">
+        🎙 Live Recognition
+      </h2>
+
+      <p className="text-gray-300">
+        Speak directly into your microphone and get real-time text instantly.
+      </p>
+    </div>
+
+    <div className="bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 text-white hover:scale-105 transition-all duration-500">
+      <h2 className="text-2xl font-bold mb-3">
+        📜 Smart History
+      </h2>
+
+      <p className="text-gray-300">
+        Access and manage all your previous transcriptions anytime.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+    {/* HISTORY SECTION */}
+    <section
+      id="history"
+      className="min-h-screen flex flex-col justify-center items-center px-4 py-24"
+    >
+      <HistoryCard history={history} />
+    </section>
+
+  </div>
+);
 }
 
 export default App;
