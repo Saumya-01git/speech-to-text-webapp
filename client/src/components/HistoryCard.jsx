@@ -1,4 +1,9 @@
-function HistoryCard({ history, darkMode }) {
+function HistoryCard({
+  history,
+  darkMode,
+  handleDeleteHistory,
+  handleClearHistory,
+}) {
   return (
     <div className="w-full max-w-5xl px-4 py-20">
       <div className="text-center mb-10">
@@ -15,9 +20,16 @@ function HistoryCard({ history, darkMode }) {
         </p>
 
         <div className="mt-5 flex justify-center">
-          <button className="bg-red-500 hover:bg-red-600 transition-all duration-300 px-6 py-3 rounded-2xl text-white font-semibold shadow-lg">
-            🧹 Clear All History
-          </button>
+          <button
+  type="button"
+  onClick={() => {
+    console.log("Clear All clicked");
+    handleClearHistory();
+  }}
+  className="relative z-50 bg-red-500 hover:bg-red-700 transition-all duration-300 px-6 py-3 rounded-2xl text-white font-semibold shadow-lg cursor-pointer"
+>
+  🧹 Clear All History
+</button>
         </div>
       </div>
 
@@ -71,7 +83,10 @@ function HistoryCard({ history, darkMode }) {
               </div>
 
               <div className="mt-5 flex justify-end">
-                <button className="bg-red-500 hover:bg-red-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg">
+                <button
+  onClick={() => handleDeleteHistory(item._id)}
+  className="bg-red-500 hover:bg-red-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
+>
                   🗑 Delete
                 </button>
               </div>

@@ -19,10 +19,18 @@ function App() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const recognitionRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  const selectedFile = e.target.files[0];
+
+  if (selectedFile) {
+    setFile(selectedFile);
+    setMessage("");
+  }
+
+  e.target.value = "";
+};
 
   const handleUpload = async (audioFile) => {
   const selectedFile = audioFile || file;
@@ -31,6 +39,7 @@ function App() {
     setMessage("Please select or record audio");
     return;
   }
+
 
   const formData = new FormData();
   formData.append("audio", selectedFile);
@@ -62,7 +71,45 @@ function App() {
   } finally {
 
     setLoading(false);
-    setFile(null);
+setFile(null);
+
+if (fileInputRef.current) {
+  fileInputRef.current.value = "";
+}
+  }
+};
+
+const resetTranscription = () => {
+  setFile(null);
+  setMessage("");
+  setTranscription("");
+  setLiveText("");
+
+  if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+};  
+
+const copyText = (text) => {
+  navigator.clipboard.writeText(text);
+  alert("Copied to clipboard ✅");
+};
+
+const handleDeleteHistory = async (id) => {
+  try {
+    await axios.delete(`http://localhost:5000/history/${id}`);
+    fetchHistory();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleClearHistory = async () => {
+  try {
+    await axios.delete("http://localhost:5000/history");
+    fetchHistory();
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -283,8 +330,9 @@ useEffect(() => {
   }`}
 >
       <input
-        type="file"
-        onChange={handleFileChange}
+  ref={fileInputRef}
+  type="file"
+  onChange={handleFileChange}
         className={`w-full ${
   darkMode ? "text-gray-200" : "text-gray-700"
 }`}
@@ -438,6 +486,22 @@ useEffect(() => {
       {transcription}
     </p>
 
+    <div className="mt-6 flex gap-3">
+  <button
+    onClick={() => copyText(liveText)}
+    className="bg-blue-500 hover:bg-blue-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
+  >
+    📋 Copy
+  </button>
+
+  <button
+    onClick={resetTranscription}
+    className="bg-red-500 hover:bg-red-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
+  >
+    Reset Result
+  </button>
+</div>
+
   </div>
 )}
 {liveText && (
@@ -464,6 +528,22 @@ useEffect(() => {
     >
       {liveText}
     </p>
+
+    <div className="mt-6 flex gap-3">
+  <button
+    onClick={() => copyText(transcription)}
+    className="bg-blue-500 hover:bg-blue-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
+  >
+    📋 Copy
+  </button>
+
+  <button
+    onClick={resetTranscription}
+    className="bg-red-500 hover:bg-red-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
+  >
+    Reset Result
+  </button>
+</div>
 
   </div>
 )}
@@ -554,7 +634,12 @@ useEffect(() => {
       id="history"
       className="min-h-screen flex flex-col justify-center items-center px-4 py-24"
     >
-     <HistoryCard history={history} darkMode={darkMode} />
+    <HistoryCard
+  history={history}
+  darkMode={darkMode}
+  handleDeleteHistory={handleDeleteHistory}
+  handleClearHistory={handleClearHistory}
+/>
     </section>
 
   </div>
