@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import UploadCard from "./components/UploadCard";
 import HistoryCard from "./components/HistoryCard";
+import { FiCopy } from "react-icons/fi";
 
 function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -24,10 +25,17 @@ function App() {
   const handleFileChange = (e) => {
   const selectedFile = e.target.files[0];
 
-  if (selectedFile) {
-    setFile(selectedFile);
-    setMessage("");
+  if (!selectedFile) return;
+
+  if (!selectedFile.type.startsWith("audio/")) {
+    setFile(null);
+    setMessage("Please upload a valid audio file only");
+    e.target.value = "";
+    return;
   }
+
+  setFile(selectedFile);
+  setMessage("");
 
   e.target.value = "";
 };
@@ -105,6 +113,12 @@ const handleDeleteHistory = async (id) => {
 };
 
 const handleClearHistory = async () => {
+  const confirmed = window.confirm(
+    "Are you sure you want to clear all history?"
+  );
+
+  if (!confirmed) return;
+
   try {
     await axios.delete("http://localhost:5000/history");
     fetchHistory();
@@ -332,6 +346,7 @@ useEffect(() => {
       <input
   ref={fileInputRef}
   type="file"
+  accept="audio/*,.aac"
   onChange={handleFileChange}
         className={`w-full ${
   darkMode ? "text-gray-200" : "text-gray-700"
@@ -463,7 +478,7 @@ useEffect(() => {
 
 {transcription && (
   <div
-    className={`mt-10 max-w-5xl w-full backdrop-blur-2xl rounded-3xl p-8 ${
+    className={`relative mt-10 max-w-5xl w-full backdrop-blur-2xl rounded-3xl p-8 ${
       darkMode
         ? "bg-white/10 border border-white/10 text-white"
         : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
@@ -478,6 +493,14 @@ useEffect(() => {
       📜 Transcription Result
     </h2>
 
+    <button
+  onClick={() => copyText(transcription)}
+  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-all duration-300"
+  title="Copy"
+>
+  <FiCopy size={18} />
+</button>
+
     <p
       className={`leading-8 text-lg ${
         darkMode ? "text-gray-200" : "text-gray-700"
@@ -487,12 +510,7 @@ useEffect(() => {
     </p>
 
     <div className="mt-6 flex gap-3">
-  <button
-    onClick={() => copyText(liveText)}
-    className="bg-blue-500 hover:bg-blue-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
-  >
-    📋 Copy
-  </button>
+  
 
   <button
     onClick={resetTranscription}
@@ -506,7 +524,7 @@ useEffect(() => {
 )}
 {liveText && (
   <div
-    className={`mt-10 max-w-5xl w-full backdrop-blur-2xl rounded-3xl p-8 ${
+    className={`relative mt-10 max-w-5xl w-full backdrop-blur-2xl rounded-3xl p-8 ${
       darkMode
         ? "bg-white/10 border border-amber-400/20 text-white shadow-[0_0_40px_rgba(251,191,36,0.15)]"
         : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
@@ -521,6 +539,14 @@ useEffect(() => {
       ⚡ Live Speech Result
     </h2>
 
+    <button
+  onClick={() => copyText(liveText)}
+  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-all duration-300"
+  title="Copy"
+>
+  <FiCopy size={18} />
+</button>
+
     <p
       className={`leading-8 text-lg ${
         darkMode ? "text-gray-200" : "text-gray-700"
@@ -530,12 +556,6 @@ useEffect(() => {
     </p>
 
     <div className="mt-6 flex gap-3">
-  <button
-    onClick={() => copyText(transcription)}
-    className="bg-blue-500 hover:bg-blue-600 transition-all duration-300 px-5 py-2 rounded-xl text-white font-semibold shadow-lg"
-  >
-    📋 Copy
-  </button>
 
   <button
     onClick={resetTranscription}
