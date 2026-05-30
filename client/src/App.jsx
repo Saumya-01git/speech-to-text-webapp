@@ -6,6 +6,7 @@ import UploadCard from "./components/UploadCard";
 import HistoryCard from "./components/HistoryCard";
 
 function App() {
+  const [darkMode, setDarkMode] = useState(true);
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [transcription, setTranscription] = useState("");
@@ -139,24 +140,39 @@ function App() {
 
     recognition.continuous = true;
     recognition.interimResults = true;
+    recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
 
-      let transcript = "";
+  let finalTranscript = "";
+  let interimTranscript = "";
 
-      for (
-        let i = event.resultIndex;
-        i < event.results.length;
-        i++
-      ) {
-        transcript += event.results[i][0].transcript;
-      }
+  for (
+    let i = event.resultIndex;
+    i < event.results.length;
+    i++
+  ) {
 
-      setLiveText(transcript);
-    };
+    const transcript =
+      event.results[i][0].transcript;
+
+    if (event.results[i].isFinal) {
+      finalTranscript += transcript;
+    } else {
+      interimTranscript += transcript;
+    }
+  }
+
+  setLiveText(
+    finalTranscript + interimTranscript
+  );
+};
     recognition.onend = () => {
-      setListening(false);
-    };
+
+  if (listening) {
+    recognition.start();
+  }
+};
 
     recognition.start();
     setListening(true);
@@ -164,12 +180,12 @@ function App() {
 
   const stopLiveSpeech = () => {
 
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
+  setListening(false);
 
-    setListening(false);
-  };
+  if (recognitionRef.current) {
+    recognitionRef.current.stop();
+  }
+};
 
   const fetchHistory = async () => {
 
@@ -192,14 +208,20 @@ useEffect(() => {
 }, []);
 
   return (
-  <div className="min-h-screen relative overflow-hidden flex flex-col justify-center items-center bg-gradient-to-br from-black via-blue-950 to-red-950 font-sans p-4">
-    <div className="absolute top-40 left-20 w-72 h-72 bg-orange-500/20 blur-3xl rounded-full"></div>
+  <div
+  className={`min-h-screen relative overflow-hidden flex flex-col justify-center items-center font-sans p-4 transition-all duration-500 ${
+    darkMode
+  ? "bg-gradient-to-br from-[#050816] via-[#0B1120] to-[#111827] text-white"
+  : "bg-gradient-to-br from-[#FFF0E4] via-[#FFF7F0] to-[#FFE0C5] text-[#1E293B]"
+  }`}
+>
+    <div className="absolute top-40 left-20 w-72 h-72 bg-[#24B1B1]/10 blur-3xl rounded-full"></div>
 
 <div className="absolute bottom-20 right-20 w-80 h-80 bg-blue-500/20 blur-3xl rounded-full"></div>
 
 <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-yellow-400/10 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-    <Navbar />
-    <div className="absolute w-72 h-72 bg-orange-500/20 blur-3xl rounded-full top-20 left-10"></div>
+    <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+    <div className="absolute w-72 h-72 bg-[#007979]/10 blur-3xl rounded-full top-20 left-10"></div>
 
 <div className="absolute w-72 h-72 bg-amber-300/20 blur-3xl rounded-full bottom-10 right-10"></div>
 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_60%)]"></div>
@@ -209,65 +231,321 @@ useEffect(() => {
       id="home"
       className="min-h-screen flex justify-center items-center px-4"
     >
-      <Hero />
+      <Hero darkMode={darkMode} />
     </section>
 
     {/* TRANSCRIBE SECTION */}
     {/* TRANSCRIBE SECTION */}
 <section
   id="transcribe"
-  className="min-h-screen flex flex-col justify-center items-center px-4"
+  className="min-h-screen flex flex-col items-center px-4 pt-32 pb-20"
 >
 
-  <UploadCard
-    file={file}
-    handleFileChange={handleFileChange}
-    handleUpload={handleUpload}
-    loading={loading}
-    recording={recording}
-    startRecording={startRecording}
-    stopRecording={stopRecording}
-    listening={listening}
-    startLiveSpeech={startLiveSpeech}
-    stopLiveSpeech={stopLiveSpeech}
-    message={message}
-    liveText={liveText}
-    transcription={transcription}
-  />
+  <div className="grid md:grid-cols-3 gap-8 w-full max-w-7xl relative">
+
+  {/* Upload Card */}
+  <div
+  className={`group relative overflow-hidden backdrop-blur-2xl rounded-[32px] p-8 transition-all duration-500 hover:-translate-y-2 ${
+    darkMode
+      ? "bg-white/[0.08] border border-white/10 hover:shadow-[0_0_50px_rgba(59,130,246,0.25)]"
+      : "bg-white/70 border border-[#24B1B1]/20 hover:shadow-[0_0_35px_rgba(0,121,121,0.12)]"
+  }`}
+>
+
+    {/* Glow */}
+    <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+    {/* Icon */}
+    <div className="relative w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center text-3xl mb-6 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+      📂
+    </div>
+
+    <h2
+  className={`text-3xl font-black mb-4 ${
+    darkMode ? "text-white" : "text-[#007979]"
+  }`}
+>
+      Upload Audio
+    </h2>
+
+    <p
+  className={`leading-7 mb-8 ${
+    darkMode ? "text-gray-300" : "text-gray-600"
+  }`}
+>
+      Upload audio files and instantly convert them into accurate AI-powered text.
+    </p>
+
+    <div
+  className={`border rounded-2xl p-5 backdrop-blur-xl mb-6 transition-all duration-300 ${
+    darkMode
+      ? "border-dashed border-white/20 bg-white/[0.04] hover:bg-white/[0.06]"
+      : "border-[#24B1B1]/20 bg-[#FFF7F0]"
+  }`}
+>
+      <input
+        type="file"
+        onChange={handleFileChange}
+        className={`w-full ${
+  darkMode ? "text-gray-200" : "text-gray-700"
+}`}
+      />
+
+    </div>
+
+    <button
+      onClick={() => handleUpload()}
+      className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
+  darkMode
+    ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white hover:shadow-[0_0_35px_rgba(59,130,246,0.45)]"
+    : "bg-[#007979] hover:bg-[#24B1B1] text-white"
+}`}
+    >
+      {loading ? "Converting..." : "Convert Audio"}
+    </button>
+
+  </div>
+
+  {/* Record Card */}
+<div
+  className={`group relative overflow-hidden backdrop-blur-2xl rounded-[32px] p-8 transition-all duration-500 hover:-translate-y-2 ${
+    darkMode
+      ? "bg-white/[0.08] border border-white/10 hover:shadow-[0_0_50px_rgba(34,197,94,0.25)]"
+      : "bg-white/70 border border-[#24B1B1]/20 hover:shadow-[0_0_35px_rgba(0,121,121,0.12)]"
+  }`}
+>
+
+  <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+
+  <div className="relative w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center text-3xl mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+    🎙
+  </div>
+
+  <h2
+    className={`text-3xl font-black mb-4 ${
+      darkMode ? "text-white" : "text-[#007979]"
+    }`}
+  >
+    Record Voice
+  </h2>
+
+  <p
+    className={`leading-7 mb-8 ${
+      darkMode ? "text-gray-300" : "text-gray-600"
+    }`}
+  >
+    Record directly from your microphone with crystal-clear voice capture.
+  </p>
+
+  {!recording ? (
+    <button
+      onClick={startRecording}
+      className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
+        darkMode
+          ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white hover:shadow-[0_0_35px_rgba(34,197,94,0.45)]"
+          : "bg-[#007979] hover:bg-[#24B1B1] text-white"
+      }`}
+    >
+      Start Recording
+    </button>
+  ) : (
+    <button
+      onClick={stopRecording}
+      className="w-full bg-gradient-to-r from-red-500 to-red-600 py-4 rounded-2xl font-bold text-lg text-white transition-all duration-300 hover:shadow-[0_0_35px_rgba(239,68,68,0.45)]"
+    >
+      Stop Recording
+    </button>
+  )}
+
+</div>
+
+  {/* Live Speech */}
+<div
+  className={`group relative overflow-hidden backdrop-blur-2xl rounded-[32px] p-8 transition-all duration-500 hover:-translate-y-2 ${
+    darkMode
+      ? "bg-white/[0.08] border border-white/10 hover:shadow-[0_0_50px_rgba(251,191,36,0.25)]"
+      : "bg-white/70 border border-[#24B1B1]/20 hover:shadow-[0_0_35px_rgba(0,121,121,0.12)]"
+  }`}
+>
+
+  <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-amber-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+
+  <div className="relative w-16 h-16 rounded-2xl bg-amber-400/20 flex items-center justify-center text-3xl mb-6 shadow-[0_0_30px_rgba(251,191,36,0.3)]">
+    ⚡
+  </div>
+
+  <h2
+    className={`text-3xl font-black mb-4 ${
+      darkMode ? "text-white" : "text-[#007979]"
+    }`}
+  >
+    Live Speech
+  </h2>
+
+  <p
+    className={`leading-7 mb-8 ${
+      darkMode ? "text-gray-300" : "text-gray-600"
+    }`}
+  >
+    Speak live and generate real-time speech recognition instantly.
+  </p>
+
+  <button
+    onClick={startLiveSpeech}
+    className={`w-full py-4 rounded-2xl font-black text-lg transition-all duration-300 ${
+      darkMode
+        ? "bg-gradient-to-r from-amber-400 to-orange-500 hover:from-orange-400 hover:to-amber-300 text-black hover:shadow-[0_0_35px_rgba(251,191,36,0.45)]"
+        : "bg-[#007979] hover:bg-[#24B1B1] text-white"
+    }`}
+  >
+    {listening ? "Listening..." : "Start Live Speech"}
+  </button>
+
+  {listening && (
+    <button
+      onClick={stopLiveSpeech}
+      className="w-full bg-gradient-to-r from-red-500 to-red-600 py-4 rounded-2xl font-bold text-lg text-white mt-5 transition-all duration-300 hover:shadow-[0_0_35px_rgba(239,68,68,0.45)]"
+    >
+      Stop Live Speech
+    </button>
+  )}
+
+</div>
+
+</div>
+
+{transcription && (
+  <div
+    className={`mt-10 max-w-5xl w-full backdrop-blur-2xl rounded-3xl p-8 ${
+      darkMode
+        ? "bg-white/10 border border-white/10 text-white"
+        : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
+    }`}
+  >
+
+    <h2
+      className={`text-3xl font-bold mb-4 ${
+        darkMode ? "text-white" : "text-[#007979]"
+      }`}
+    >
+      📜 Transcription Result
+    </h2>
+
+    <p
+      className={`leading-8 text-lg ${
+        darkMode ? "text-gray-200" : "text-gray-700"
+      }`}
+    >
+      {transcription}
+    </p>
+
+  </div>
+)}
+{liveText && (
+  <div
+    className={`mt-10 max-w-5xl w-full backdrop-blur-2xl rounded-3xl p-8 ${
+      darkMode
+        ? "bg-white/10 border border-amber-400/20 text-white shadow-[0_0_40px_rgba(251,191,36,0.15)]"
+        : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
+    }`}
+  >
+
+    <h2
+      className={`text-3xl font-bold mb-4 ${
+        darkMode ? "text-amber-300" : "text-[#007979]"
+      }`}
+    >
+      ⚡ Live Speech Result
+    </h2>
+
+    <p
+      className={`leading-8 text-lg ${
+        darkMode ? "text-gray-200" : "text-gray-700"
+      }`}
+    >
+      {liveText}
+    </p>
+
+  </div>
+)}
 
   <div className="grid md:grid-cols-3 gap-5 mt-8 w-full max-w-5xl">
 
-    <div className="bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 text-white hover:scale-105 transition-all duration-500">
-      <h2 className="text-2xl font-bold mb-3">
-        ⚡ Fast Processing
-      </h2>
+  {/* Card 1 */}
+  <div
+    className={`backdrop-blur-xl rounded-3xl p-6 hover:scale-105 transition-all duration-500 ${
+      darkMode
+        ? "bg-white/10 border border-white/10 text-white"
+        : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
+    }`}
+  >
+    <h2
+      className={`text-2xl font-bold mb-3 ${
+        darkMode ? "text-white" : "text-[#007979]"
+      }`}
+    >
+      ⚡ Fast Processing
+    </h2>
 
-      <p className="text-gray-300">
-        Convert audio into text within seconds using AI-powered transcription.
-      </p>
-    </div>
-
-    <div className="bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 text-white hover:scale-105 transition-all duration-500">
-      <h2 className="text-2xl font-bold mb-3">
-        🎙 Live Recognition
-      </h2>
-
-      <p className="text-gray-300">
-        Speak directly into your microphone and get real-time text instantly.
-      </p>
-    </div>
-
-    <div className="bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 text-white hover:scale-105 transition-all duration-500">
-      <h2 className="text-2xl font-bold mb-3">
-        📜 Smart History
-      </h2>
-
-      <p className="text-gray-300">
-        Access and manage all your previous transcriptions anytime.
-      </p>
-    </div>
-
+    <p
+      className={`${
+        darkMode ? "text-gray-300" : "text-gray-600"
+      }`}
+    >
+      Convert audio into text within seconds using AI-powered transcription.
+    </p>
   </div>
+
+  {/* Card 2 */}
+  <div
+    className={`backdrop-blur-xl rounded-3xl p-6 hover:scale-105 transition-all duration-500 ${
+      darkMode
+        ? "bg-white/10 border border-white/10 text-white"
+        : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
+    }`}
+  >
+    <h2
+      className={`text-2xl font-bold mb-3 ${
+        darkMode ? "text-white" : "text-[#007979]"
+      }`}
+    >
+      🎙 Live Recognition
+    </h2>
+
+    <p
+      className={`${
+        darkMode ? "text-gray-300" : "text-gray-600"
+      }`}
+    >
+      Speak directly into your microphone and get real-time text instantly.
+    </p>
+  </div>
+
+  {/* Card 3 */}
+  <div
+    className={`backdrop-blur-xl rounded-3xl p-6 hover:scale-105 transition-all duration-500 ${
+      darkMode
+        ? "bg-white/10 border border-white/10 text-white"
+        : "bg-white/80 border border-[#24B1B1]/20 text-[#1E293B]"
+    }`}
+  >
+    <h2
+      className={`text-2xl font-bold mb-3 ${
+        darkMode ? "text-white" : "text-[#007979]"
+      }`}
+    >
+      📜 Smart History
+    </h2>
+
+    <p
+      className={`${
+        darkMode ? "text-gray-300" : "text-gray-600"
+      }`}
+    >
+      Access and manage all your previous transcriptions anytime.
+    </p>
+  </div>
+
+</div>
 
 </section>
 
@@ -276,7 +554,7 @@ useEffect(() => {
       id="history"
       className="min-h-screen flex flex-col justify-center items-center px-4 py-24"
     >
-      <HistoryCard history={history} />
+     <HistoryCard history={history} darkMode={darkMode} />
     </section>
 
   </div>
