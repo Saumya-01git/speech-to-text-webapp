@@ -1,11 +1,38 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 function Auth() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+const [loginPassword, setLoginPassword] = useState("");
+const [signupEmail, setSignupEmail] = useState("");
+const [signupPassword, setSignupPassword] = useState("");
+const [showPassword, setShowPassword] = useState(false);
   const [authMode, setAuthMode] = useState("login");
   const [message, setMessage] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const email = authMode === "login" ? loginEmail : signupEmail;
+const password = authMode === "login" ? loginPassword : signupPassword;
+  const handleForgotPassword = async () => {
+  setMessage("");
+
+  if (!email) {
+    setMessage("Please enter your email first");
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+  if (error) {
+    if (error.message.includes("rate limit")) {
+  setMessage("⚠️ Too many email requests. Please wait a few minutes and try again.");
+} else {
+  setMessage(error.message);
+}
+  } else {
+    setMessage("✅ Password reset link sent to your email");
+  }
+};
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -16,20 +43,39 @@ function Auth() {
     setMessage("Please enter a valid email address");
     return;
     }
-    const { error } =
-      authMode === "login"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
 
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage(
-        authMode === "login"
-          ? "Login successful ✅"
-          : "Signup successful ✅ Check your email if confirmation is enabled."
-      );
+    if (authMode === "signup") {
+  const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+  if (!strongPasswordRegex.test(password)) {
+    setMessage("Password must be at least 8 characters and include 1 letter and 1 number");
+    return;
+  }
+}
+setAuthLoading(true);
+
+try {
+  const { error } =
+    authMode === "login"
+      ? await supabase.auth.signInWithPassword({ email, password })
+      : await supabase.auth.signUp({ email, password });
+
+  if (error) {
+  if (error.message === "Invalid login credentials") {
+    setMessage("❌ Incorrect email or password");
+  } else {
+    setMessage(error.message);
+  }
+} else {
+  setMessage(
+    authMode === "login"
+      ? "✅ Login successful"
+      : "✅ Signup successful. Check your email to verify your account."
+  );
     }
+} finally {
+  setAuthLoading(false);
+}
   };
 
   return (
@@ -62,34 +108,83 @@ function Auth() {
             : "Create your account and save your transcriptions securely."}
         </p>
       </div>
+      
+      {message && (
+  <div className="mb-4 rounded-2xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 text-center text-sm text-orange-200 shadow-[0_0_20px_rgba(251,146,60,0.15)]">
+    {message}
+  </div>
+)} 
+
 
       <input
         type="email"
         placeholder="Email address"
         className="w-full mb-4 px-5 py-4 rounded-2xl bg-black/30 border border-white/10 text-white placeholder:text-gray-400 outline-none focus:border-orange-400 transition-all duration-300"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+onChange={(e) =>
+  authMode === "login"
+    ? setLoginEmail(e.target.value)
+    : setSignupEmail(e.target.value)
+}
         required
       />
 
-      <input
-        type="password"
-        placeholder="Password"
-        className="w-full mb-5 px-5 py-4 rounded-2xl bg-black/30 border border-white/10 text-white placeholder:text-gray-400 outline-none focus:border-orange-400 transition-all duration-300"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+      <div className="relative mb-5">
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    className="w-full px-5 py-4 pr-14 rounded-2xl bg-black/30 border border-white/10 text-white placeholder:text-gray-400 outline-none focus:border-orange-400 transition-all duration-300"
+    value={password}
+    onChange={(e) =>
+      authMode === "login"
+        ? setLoginPassword(e.target.value)
+        : setSignupPassword(e.target.value)
+    }
+    required
+  />
 
-      <button className="w-full bg-gradient-to-r from-orange-400 to-orange-600 text-black font-bold py-4 rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(251,146,60,0.35)] hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]">
-        {authMode === "login" ? "Login" : "Sign Up"}
-      </button>
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-orange-300 transition-all duration-300"
+  >
+    {showPassword ? (
+  <FiEyeOff size={20} />
+) : (
+  <FiEye size={20} />
+)}
+  </button>
+</div>
+ {authMode === "login" && (
+  <div className="text-right mb-5">
+    <button
+      type="button"
+      onClick={handleForgotPassword}
+      className="text-sm text-cyan-300 hover:text-orange-300 transition-all duration-300"
+    >
+      Forgot Password?
+    </button>
+  </div>
+)}
 
-      {message && (
-        <p className="mt-4 text-center text-sm text-orange-300">
-          {message}
-        </p>
-      )}
+      <button
+  disabled={authLoading}
+  className={`w-full bg-gradient-to-r from-orange-400 to-orange-600 text-black font-bold py-4 rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(251,146,60,0.35)] ${
+    authLoading
+      ? "opacity-60 cursor-not-allowed"
+      : "hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]"
+  }`}
+>
+  {authLoading
+    ? authMode === "login"
+      ? "Logging in..."
+      : "Signing up..."
+    : authMode === "login"
+    ? "Login"
+    : "Sign Up"}
+</button>
+
+      
 
       <p className="mt-6 text-center text-gray-200">
         {authMode === "login"
@@ -97,9 +192,11 @@ function Auth() {
           : "Already have an account?"}{" "}
         <button
           type="button"
-          onClick={() =>
-            setAuthMode(authMode === "login" ? "signup" : "login")
-          }
+          onClick={() => {
+  setMessage("");
+  setShowPassword(false);
+  setAuthMode(authMode === "login" ? "signup" : "login");
+}}
           className="text-orange-300 hover:text-orange-200 font-semibold transition-all duration-300"
         >
           {authMode === "login" ? "Sign up" : "Login"}
