@@ -11,6 +11,11 @@ const transcriptionSchema = new mongoose.Schema(
       type: String,
       default: "Recorded Audio",
     },
+
+    userId: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

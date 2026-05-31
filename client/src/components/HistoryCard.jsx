@@ -2,6 +2,7 @@ function HistoryCard({
   history,
   darkMode,
   historyLoading,
+  historyError,
   handleDeleteHistory,
   handleClearHistory,
 }) {
@@ -24,16 +25,30 @@ function HistoryCard({
           <button
   type="button"
   onClick={handleClearHistory}
-  className="relative z-50 bg-red-500 hover:bg-red-700 transition-all duration-300 px-6 py-3 rounded-2xl text-white font-semibold shadow-lg cursor-pointer"
+  disabled={history.length === 0 || historyLoading}
+  className={`relative z-50 transition-all duration-300 px-6 py-3 rounded-2xl font-semibold shadow-lg ${
+  history.length === 0 || historyLoading
+    ? darkMode
+      ? "bg-orange-500/20 text-orange-200 border border-orange-400/20 cursor-not-allowed"
+      : "bg-[#007979]/20 text-[#007979] border border-[#007979]/20 cursor-not-allowed"
+    : darkMode
+      ? "bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
+      : "bg-[#007979] hover:bg-[#24B1B1] text-white cursor-pointer"
+}`}
+
 >
   🧹 Clear All History
 </button>
         </div>
       </div>
 
-      {historyLoading ? (
+     {historyLoading ? (
   <div className="text-center text-lg">
     Loading history...
+  </div>
+) : historyError ? (
+  <div className="text-center text-red-500 text-lg font-semibold">
+    {historyError}
   </div>
 ) : history.length > 0 ? (
         <div className="grid gap-6">

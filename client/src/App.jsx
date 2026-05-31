@@ -5,6 +5,8 @@ import Hero from "./components/Hero";
 import UploadCard from "./components/UploadCard";
 import HistoryCard from "./components/HistoryCard";
 import { FiCopy } from "react-icons/fi";
+import Auth from "./components/Auth";
+import { supabase } from "./supabaseClient";
 
 function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -17,6 +19,9 @@ function App() {
   const [listening, setListening] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [session, setSession] = useState(null);
+const [authLoading, setAuthLoading] = useState(true);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -51,7 +56,8 @@ function App() {
 
 
   const formData = new FormData();
-  formData.append("audio", selectedFile);
+formData.append("audio", selectedFile);
+formData.append("userId", session.user.id);
 
   try {
     setLoading(true);
@@ -106,7 +112,9 @@ const copyText = (text) => {
 
 const handleDeleteHistory = async (id) => {
   try {
-    await axios.delete(`http://localhost:5000/history/${id}`);
+    await axios.delete(
+  `http://localhost:5000/history/${id}?userId=${session.user.id}`
+);
     fetchHistory();
   } catch (error) {
     console.log(error);
@@ -122,7 +130,9 @@ const handleClearHistory = async () => {
   if (!confirmed) return;
 
   try {
-    await axios.delete("http://localhost:5000/history");
+    await axios.delete(
+  `http://localhost:5000/history?userId=${session.user.id}`
+);
     fetchHistory();
   } catch (error) {
     console.log(error);
@@ -254,23 +264,57 @@ const handleClearHistory = async () => {
   const fetchHistory = async () => {
   try {
     setHistoryLoading(true);
+    setHistoryError("");
 
     const res = await axios.get(
-      "http://localhost:5000/history"
-    );
+  `http://localhost:5000/history?userId=${session.user.id}`
+);
 
     setHistory(res.data);
 
   } catch (error) {
     console.log(error);
+    setHistoryError("Failed to load history. Please try again.");
   } finally {
     setHistoryLoading(false);
   }
 };
+useEffect(() => {
+  const getSession = async () => {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session);
+    setAuthLoading(false);
+  };
+
+  getSession();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
 useEffect(() => {
-  fetchHistory();
-}, []);
+  if (session) {
+    fetchHistory();
+  }
+}, [session]);
+
+if (authLoading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#050816] text-white">
+      Loading...
+    </div>
+  );
+}
+
+if (!session) {
+  return <Auth />;
+}
+
 
   return (
   <div
@@ -347,15 +391,35 @@ useEffect(() => {
       : "border-[#24B1B1]/20 bg-[#FFF7F0]"
   }`}
 >
-      <input
-  ref={fileInputRef}
-  type="file"
-  accept="audio/*,.aac"
-  onChange={handleFileChange}
-        className={`w-full ${
-  darkMode ? "text-gray-200" : "text-gray-700"
-}`}
-      />
+      <div className="flex items-center gap-3">
+  <label
+    htmlFor="audioUpload"
+    className={`px-4 py-2 rounded-xl font-semibold cursor-pointer transition-all duration-300 ${
+      darkMode
+        ? "bg-blue-500 hover:bg-blue-600 text-white"
+        : "bg-[#007979] hover:bg-[#24B1B1] text-white"
+    }`}
+  >
+    Choose File
+  </label>
+
+  <span
+    className={`text-sm truncate ${
+      darkMode ? "text-gray-300" : "text-gray-600"
+    }`}
+  >
+    {file ? file.name : "No file chosen"}
+  </span>
+
+  <input
+    id="audioUpload"
+    ref={fileInputRef}
+    type="file"
+    accept="audio/*,.aac"
+    onChange={handleFileChange}
+    className="hidden"
+  />
+</div>
 
     </div>
 
@@ -677,6 +741,7 @@ useEffect(() => {
   history={history}
   darkMode={darkMode}
   historyLoading={historyLoading}
+  historyError={historyError}
   handleDeleteHistory={handleDeleteHistory}
   handleClearHistory={handleClearHistory}
 />

@@ -15,6 +15,13 @@ const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 router.post("/", upload.single("audio"), async (req, res) => {
   try {
+    const userId = req.body.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
 
     const audioFile = fs.readFileSync(req.file.path);
 
@@ -40,9 +47,10 @@ router.post("/", upload.single("audio"), async (req, res) => {
 
     try {
   await Transcription.create({
-    text,
-    fileName: req.file.originalname,
-  });
+  text,
+  fileName: req.file.originalname,
+  userId,
+});
 
   console.log("Saved to MongoDB ✅");
 

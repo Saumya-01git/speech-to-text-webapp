@@ -1,4 +1,8 @@
+import { supabase } from "../supabaseClient";
 function Navbar({ darkMode, setDarkMode }) {
+  const handleLogout = async () => {
+  await supabase.auth.signOut();
+};
   return (
     <nav
       className={`w-full fixed top-0 left-0 z-50 backdrop-blur-xl border-b shadow-lg transition-all duration-500 ${
@@ -62,7 +66,16 @@ function Navbar({ darkMode, setDarkMode }) {
           >
             {darkMode ? "☀️" : "🌙"}
           </button>
-
+          <button
+  onClick={handleLogout}
+  className={`px-4 py-2 rounded-full text-white text-sm font-semibold transition-all duration-300 ${
+    darkMode
+      ? "bg-orange-500 hover:bg-orange-600"
+      : "bg-[#007979] hover:bg-[#24B1B1]"
+  }`}
+>
+  Logout
+</button>
         </div>
       </div>
     </nav>

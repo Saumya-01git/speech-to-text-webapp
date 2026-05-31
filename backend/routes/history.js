@@ -5,7 +5,18 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const history = await Transcription.find().sort({ createdAt: -1 });
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
+    const history = await Transcription.find({ userId }).sort({
+      createdAt: -1,
+    });
+
     res.json(history);
   } catch (error) {
     console.log(error);
@@ -15,7 +26,16 @@ router.get("/", async (req, res) => {
 
 router.delete("/", async (req, res) => {
   try {
-    await Transcription.deleteMany({});
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
+    await Transcription.deleteMany({ userId });
+
     res.json({ message: "All history cleared" });
   } catch (error) {
     console.log(error);
@@ -25,7 +45,19 @@ router.delete("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    await Transcription.findByIdAndDelete(req.params.id);
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
+    await Transcription.findOneAndDelete({
+      _id: req.params.id,
+      userId,
+    });
+
     res.json({ message: "History item deleted" });
   } catch (error) {
     console.log(error);
