@@ -60,8 +60,10 @@ try {
       ? await supabase.auth.signInWithPassword({ email, password })
       : await supabase.auth.signUp({ email, password });
 
-  if (error) {
-  if (error.message === "Invalid login credentials") {
+ if (error) {
+  if (error.message.includes("rate limit")) {
+    setMessage("⚠️ Too many email requests. Please wait a few minutes and try again.");
+  } else if (error.message === "Invalid login credentials") {
     setMessage("❌ Incorrect email or password");
   } else {
     setMessage(error.message);
