@@ -68,7 +68,7 @@ formData.append("userId", session.user.id);
     setLiveText("");
 
     const res = await axios.post(
-      "http://localhost:5000/transcribe",
+      `${import.meta.env.VITE_API_URL}/transcribe`,
       formData
     );
 
@@ -113,7 +113,7 @@ const copyText = (text) => {
 const handleDeleteHistory = async (id) => {
   try {
     await axios.delete(
-  `http://localhost:5000/history/${id}?userId=${session.user.id}`
+  `${import.meta.env.VITE_API_URL}/history/${id}?userId=${session.user.id}`
 );
     fetchHistory();
   } catch (error) {
@@ -131,7 +131,7 @@ const handleClearHistory = async () => {
 
   try {
     await axios.delete(
-  `http://localhost:5000/history?userId=${session.user.id}`
+  `${import.meta.env.VITE_API_URL}/history?userId=${session.user.id}`
 );
     fetchHistory();
   } catch (error) {
@@ -267,7 +267,7 @@ const handleClearHistory = async () => {
     setHistoryError("");
 
     const res = await axios.get(
-  `http://localhost:5000/history?userId=${session.user.id}`
+  `${import.meta.env.VITE_API_URL}/history?userId=${session.user.id}`
 );
 
     setHistory(res.data);
