@@ -6,20 +6,16 @@ function Navbar({ darkMode, setDarkMode }) {
   return (
     <nav
       className={`w-full fixed top-0 left-0 z-50 backdrop-blur-xl border-b shadow-lg transition-all duration-500 ${
-        darkMode
-          ? "bg-black/40 border-white/5"
+       darkMode
+  ? "bg-[#082C2C]/85 border-[#24B1B1]/25 shadow-[0_0_20px_rgba(36,177,177,0.15)]"
           : "bg-[#FFF0E4]/80 border-[#24B1B1]/20"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
-        <h1
-          className={`text-3xl font-bold tracking-wide ${
-            darkMode ? "text-white" : "text-[#007979]"
-          }`}
-        >
-          🎤 SpeechAI
-        </h1>
+        <h1 className="text-4xl font-black">
+  🎤 <span className="text-cyan-200">SpeechAI</span>
+</h1>
 
         <div className="flex items-center gap-8 text-lg font-medium">
 
