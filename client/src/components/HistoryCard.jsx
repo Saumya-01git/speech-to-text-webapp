@@ -1,6 +1,7 @@
 function HistoryCard({
   history,
   darkMode,
+  historyLoading,
   handleDeleteHistory,
   handleClearHistory,
 }) {
@@ -22,10 +23,7 @@ function HistoryCard({
         <div className="mt-5 flex justify-center">
           <button
   type="button"
-  onClick={() => {
-    console.log("Clear All clicked");
-    handleClearHistory();
-  }}
+  onClick={handleClearHistory}
   className="relative z-50 bg-red-500 hover:bg-red-700 transition-all duration-300 px-6 py-3 rounded-2xl text-white font-semibold shadow-lg cursor-pointer"
 >
   🧹 Clear All History
@@ -33,7 +31,11 @@ function HistoryCard({
         </div>
       </div>
 
-      {history.length > 0 ? (
+      {historyLoading ? (
+  <div className="text-center text-lg">
+    Loading history...
+  </div>
+) : history.length > 0 ? (
         <div className="grid gap-6">
           {history.map((item, index) => (
             <div

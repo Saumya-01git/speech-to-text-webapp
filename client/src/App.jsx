@@ -16,6 +16,7 @@ function App() {
   const [liveText, setLiveText] = useState("");
   const [listening, setListening] = useState(false);
   const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -109,6 +110,7 @@ const handleDeleteHistory = async (id) => {
     fetchHistory();
   } catch (error) {
     console.log(error);
+    alert("Failed to delete history item");
   }
 };
 
@@ -124,6 +126,7 @@ const handleClearHistory = async () => {
     fetchHistory();
   } catch (error) {
     console.log(error);
+    alert("Failed to clear history");
   }
 };
 
@@ -249,8 +252,8 @@ const handleClearHistory = async () => {
 };
 
   const fetchHistory = async () => {
-
   try {
+    setHistoryLoading(true);
 
     const res = await axios.get(
       "http://localhost:5000/history"
@@ -259,8 +262,9 @@ const handleClearHistory = async () => {
     setHistory(res.data);
 
   } catch (error) {
-
     console.log(error);
+  } finally {
+    setHistoryLoading(false);
   }
 };
 
@@ -672,6 +676,7 @@ useEffect(() => {
     <HistoryCard
   history={history}
   darkMode={darkMode}
+  historyLoading={historyLoading}
   handleDeleteHistory={handleDeleteHistory}
   handleClearHistory={handleClearHistory}
 />
