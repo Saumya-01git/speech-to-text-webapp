@@ -356,8 +356,13 @@ useEffect(() => {
     </div>
 
     <button
-      onClick={() => handleUpload()}
+  onClick={() => handleUpload()}
+  disabled={loading || recording || listening}
       className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
+  loading || recording || listening
+  ? "opacity-60 cursor-not-allowed"
+  : ""
+} ${
   darkMode
     ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white hover:shadow-[0_0_35px_rgba(59,130,246,0.45)]"
     : "bg-[#007979] hover:bg-[#24B1B1] text-white"
@@ -401,9 +406,14 @@ useEffect(() => {
 
   {!recording ? (
     <button
-      onClick={startRecording}
+  onClick={startRecording}
+  disabled={listening || loading}
       className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
-        darkMode
+  listening || loading
+    ? "opacity-60 cursor-not-allowed"
+    : ""
+} ${
+  darkMode
           ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white hover:shadow-[0_0_35px_rgba(34,197,94,0.45)]"
           : "bg-[#007979] hover:bg-[#24B1B1] text-white"
       }`}
@@ -453,9 +463,14 @@ useEffect(() => {
   </p>
 
   <button
-    onClick={startLiveSpeech}
+  onClick={startLiveSpeech}
+  disabled={recording || loading}
     className={`w-full py-4 rounded-2xl font-black text-lg transition-all duration-300 ${
-      darkMode
+  recording || loading
+    ? "opacity-60 cursor-not-allowed"
+    : ""
+} ${
+  darkMode
         ? "bg-gradient-to-r from-amber-400 to-orange-500 hover:from-orange-400 hover:to-amber-300 text-black hover:shadow-[0_0_35px_rgba(251,191,36,0.45)]"
         : "bg-[#007979] hover:bg-[#24B1B1] text-white"
     }`}
