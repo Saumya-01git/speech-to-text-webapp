@@ -7,6 +7,7 @@ import HistoryCard from "./components/HistoryCard";
 import { FiCopy } from "react-icons/fi";
 import Auth from "./components/Auth";
 import { supabase } from "./supabaseClient";
+import UpdatePassword from "./components/UpdatePassword";
 
 function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -22,6 +23,7 @@ function App() {
   const [historyError, setHistoryError] = useState("");
   const [session, setSession] = useState(null);
 const [authLoading, setAuthLoading] = useState(true);
+const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -290,9 +292,13 @@ useEffect(() => {
 
   const {
     data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setSession(session);
-  });
+  } = supabase.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    setIsPasswordRecovery(true);
+  }
+
+  setSession(session);
+});
 
   return () => subscription.unsubscribe();
 }, []);
@@ -310,7 +316,9 @@ if (authLoading) {
     </div>
   );
 }
-
+if (isPasswordRecovery) {
+  return <UpdatePassword />;
+}
 if (!session) {
   return <Auth />;
 }
